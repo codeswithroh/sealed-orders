@@ -22,7 +22,7 @@ pub const FORESTS: [(u8, u8); 8] = [
     (5, 11),
 ];
 
-pub const WIN_SCORE: u16 = 150;
+pub const WIN_SCORE: u16 = 600;
 pub const MAX_TICKS: u16 = 480;
 
 pub const KIND_INFANTRY: u8 = 0;

@@ -3,7 +3,7 @@
 export const W = 15;
 export const H = 15;
 export const RIVER_Y = 7;
-export const WIN_SCORE = 150;
+export const WIN_SCORE = 600;
 export const MAX_TICKS = 480;
 export const TICK_MS = 500;
 

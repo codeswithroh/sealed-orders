@@ -103,7 +103,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <button className="btn btn-ghost h-9 w-9 p-0 lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
               <Menu size={16} />
             </button>
-            <span className="text-sm font-semibold text-muted">Solana devnet · MagicBlock TEE rollup</span>
+            <span className="hidden text-sm font-semibold text-muted sm:inline">Solana devnet · MagicBlock TEE rollup</span>
           </div>
           <EnclaveChip />
         </header>

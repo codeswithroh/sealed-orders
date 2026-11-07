@@ -101,7 +101,7 @@ Hills (+2 sight, -25% damage taken): North-west Hill (4,4), South-east Hill (10,
 Woods (units inside are hidden unless an enemy is adjacent): North Woods (9..10,3..4), South Woods (4..5,10..11).
 You are side ${side}. Your base is the ${home}. The enemy comes from the ${enemy}.
 "Forward"/"advance" means toward the enemy. "Back"/"fall back" means toward your base.
-Holding points scores 1/tick each; first to 150 wins. Ticks are 0.5s; the game lasts at most 480 ticks.
+Holding points scores 1/tick each; first to 600 wins. Ticks are 0.5s; the game lasts at most 480 ticks.
 Squads: 0 Alpha (infantry, 100hp, slow), 1 Bravo (infantry, 100hp, slow), 2 Scout (60hp, fast, sees 5 tiles).
 Actions: hold (stay, fight adjacent, -25% damage taken), move (walk to x,y, fights adjacent enemies on the way),
 attack (walk, stop and fight when an enemy is adjacent), retreat (walk without fighting).`;

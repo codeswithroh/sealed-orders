@@ -15,7 +15,7 @@ export default function Guide() {
         <h1 className="text-2xl font-extrabold tracking-tight">How to command</h1>
         <div className="grid gap-3 sm:grid-cols-2">
           {[
-            { t: "Win", d: "Each crossing you hold scores 1 point per tick. First to 150, or most points after 480 ticks (4 min). Wiping out the enemy also wins." },
+            { t: "Win", d: "Each crossing you hold scores 1 point per tick. First to 600, or most points after 480 ticks (4 min). Wiping out the enemy also wins." },
             { t: "Squads", d: "Alpha and Bravo: infantry, 100 HP, move every other tick. Scout: 60 HP, moves every tick, sees 5 tiles." },
             { t: "Terrain", d: "River on the middle row; cross only at the 3 points. Hills: +2 sight, 25% less damage. Woods: invisible unless an enemy is adjacent." },
             { t: "Actions", d: "Hold (fights, 25% less damage) · Move (fights on the way) · Attack (stops to fight) · Retreat (never fights)." },

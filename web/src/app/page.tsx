@@ -125,7 +125,7 @@ rule: enemy_within 2
         <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-2xl bg-ink p-8 text-white sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2 text-sm text-white/60">
-              <Timer size={16} /> First to 150 points, or whoever holds more after 4 minutes
+              <Timer size={16} /> First to 600 points, or whoever holds more after 4 minutes
             </div>
             <div className="mt-2 text-2xl font-extrabold">Hold the bridges. Hide in the woods. Out-think the AI.</div>
           </div>
