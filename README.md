@@ -4,6 +4,8 @@ A real-time strategy game on Solana where you command your army in plain English
 
 Built for the **MLH Solana Hackathon** (Nov 6–8, 2026).
 
+**Play it:** https://web-production-1afea.up.railway.app (Solana devnet, no wallet needed)
+
 - You type (or say) an order: *"Bravo hold the Ford. If they get within 2, fall back to the hill."*
 - Claude compiles it into a small rule: `hold (7,7)` + `if enemy_within 2 → retreat (10,10)`.
 - The rule is written into your army account on a **MagicBlock Private Ephemeral Rollup**, inside an Intel TDX enclave. Only your key can read that account.
