@@ -61,7 +61,7 @@ pub mod sealed_orders {
         let w = new_world();
         g.control = w.control;
 
-        init_side(&mut ctx.accounts.army, &mut ctx.accounts.intel, game_id, 0, commander, &w);
+        init_side(&mut *ctx.accounts.army.load_init()?, &mut ctx.accounts.intel, game_id, 0, commander, &w);
         Ok(())
     }
 
@@ -77,7 +77,7 @@ pub mod sealed_orders {
         g.joined = 3;
 
         let w = new_world();
-        init_side(&mut ctx.accounts.army, &mut ctx.accounts.intel, game_id, 1, commander, &w);
+        init_side(&mut *ctx.accounts.army.load_init()?, &mut ctx.accounts.intel, game_id, 1, commander, &w);
         Ok(())
     }
 
@@ -149,7 +149,8 @@ pub mod sealed_orders {
         require!(g.status != STATUS_ENDED, GameError::GameOver);
         require!(!orders.is_empty() && orders.len() <= SQUADS, GameError::BadOrder);
         require!(text.len() <= TEXT_LEN, GameError::TextTooLong);
-        let army = &mut ctx.accounts.army;
+        let mut army = ctx.accounts.army.load_mut()?;
+        require!(army.game_id == g.game_id, GameError::WrongAccount);
         require_keys_eq!(army.commander, ctx.accounts.commander.key(), GameError::NotACommander);
 
         let mut mask = 0u8;
@@ -162,9 +163,9 @@ pub mod sealed_orders {
                 r.action.validate()?;
             }
             let u = &mut army.units[i];
-            u.action = o.action;
+            u.action = o.action.into();
             for r in 0..2 {
-                u.rules[r] = RuleState { trigger: o.rules[r].trigger, action: o.rules[r].action, fired: 0 };
+                u.rules[r] = ZRule { trigger: o.rules[r].trigger.into(), action: o.rules[r].action.into(), fired: 0 };
             }
             mask |= 1 << i;
         }
@@ -190,7 +191,8 @@ pub mod sealed_orders {
         }
         g.last_slot = slot;
 
-        let (a0, a1) = (&mut ctx.accounts.army0, &mut ctx.accounts.army1);
+        let mut a0 = ctx.accounts.army0.load_mut()?;
+        let mut a1 = ctx.accounts.army1.load_mut()?;
         let (i0, i1) = (&mut ctx.accounts.intel0, &mut ctx.accounts.intel1);
         let mut w = World {
             armies: [a0.to_units(), a1.to_units()],
@@ -366,13 +368,6 @@ pub struct RuleIn {
     pub action: ActionS,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, Debug, InitSpace)]
-pub struct RuleState {
-    pub trigger: TriggerS,
-    pub action: ActionS,
-    pub fired: u8,
-}
-
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, Debug)]
 pub struct OrderIn {
     pub squad: u8,
@@ -380,28 +375,62 @@ pub struct OrderIn {
     pub rules: [RuleIn; 2],
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, Debug, InitSpace)]
+// Zero-copy types stored inside the Army account (read in place, never copied
+// onto the 4 KB BPF stack).
+#[zero_copy]
+#[derive(Default, Debug, PartialEq, Eq)]
+pub struct ZAction {
+    pub kind: u8,
+    pub x: u8,
+    pub y: u8,
+}
+impl From<ActionS> for ZAction {
+    fn from(a: ActionS) -> Self {
+        Self { kind: a.kind, x: a.x, y: a.y }
+    }
+}
+
+#[zero_copy]
+#[derive(Default, Debug, PartialEq, Eq)]
+pub struct ZTrigger {
+    pub kind: u8,
+    pub a: u8,
+    pub b: u8,
+    pub c: u8,
+}
+impl From<TriggerS> for ZTrigger {
+    fn from(t: TriggerS) -> Self {
+        Self { kind: t.kind, a: t.a, b: t.b, c: t.c }
+    }
+}
+
+#[zero_copy]
+#[derive(Default, Debug, PartialEq, Eq)]
+pub struct ZRule {
+    pub trigger: ZTrigger,
+    pub action: ZAction,
+    pub fired: u8,
+}
+
+#[zero_copy]
+#[derive(Default, Debug, PartialEq, Eq)]
 pub struct UnitState {
     pub kind: u8,
     pub x: u8,
     pub y: u8,
     pub hp: u8,
     pub cooldown: u8,
-    pub action: ActionS,
-    pub rules: [RuleState; 2],
+    pub action: ZAction,
+    pub rules: [ZRule; 2],
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug, InitSpace)]
+#[zero_copy]
+#[derive(Debug, PartialEq, Eq)]
 pub struct LogEntry {
     pub tick: u16,
     pub mask: u8,
     pub len: u8,
     pub text: [u8; TEXT_LEN],
-}
-impl Default for LogEntry {
-    fn default() -> Self {
-        Self { tick: 0, mask: 0, len: 0, text: [0; TEXT_LEN] }
-    }
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, Debug, InitSpace)]
@@ -430,15 +459,15 @@ pub struct Game {
     pub created_at: i64,
 }
 
-#[account]
-#[derive(InitSpace)]
+#[account(zero_copy)]
 pub struct Army {
     pub game_id: u64,
-    pub side: u8,
     pub commander: Pubkey,
-    pub units: [UnitState; SQUADS],
-    pub log_count: u16,
     pub log: [LogEntry; LOG_LEN],
+    pub log_count: u16,
+    pub units: [UnitState; SQUADS],
+    pub side: u8,
+    pub _pad: [u8; 5],
 }
 
 impl Army {
@@ -468,12 +497,12 @@ impl Army {
     }
     fn from_units(&mut self, units: &[Unit; SQUADS]) {
         for (i, u) in units.iter().enumerate() {
-            let mut rules = [RuleState::default(); 2];
+            let mut rules = [ZRule::default(); 2];
             for r in 0..2 {
                 let ru = u.rules[r];
-                rules[r] = RuleState {
-                    trigger: TriggerS { kind: ru.trigger.kind, a: ru.trigger.a, b: ru.trigger.b, c: ru.trigger.c },
-                    action: ActionS { kind: ru.action.kind, x: ru.action.x, y: ru.action.y },
+                rules[r] = ZRule {
+                    trigger: ZTrigger { kind: ru.trigger.kind, a: ru.trigger.a, b: ru.trigger.b, c: ru.trigger.c },
+                    action: ZAction { kind: ru.action.kind, x: ru.action.x, y: ru.action.y },
                     fired: ru.fired as u8,
                 };
             }
@@ -483,7 +512,7 @@ impl Army {
                 y: u.y,
                 hp: u.hp,
                 cooldown: u.cooldown,
-                action: ActionS { kind: u.action.kind, x: u.action.x, y: u.action.y },
+                action: ZAction { kind: u.action.kind, x: u.action.x, y: u.action.y },
                 rules,
             };
         }
@@ -541,10 +570,10 @@ impl AccountType {
 pub struct CreateGame<'info> {
     #[account(init, payer = payer, space = 8 + Game::INIT_SPACE, seeds = [GAME_SEED, &game_id.to_le_bytes()], bump)]
     pub game: Account<'info, Game>,
-    #[account(init, payer = payer, space = 8 + Army::INIT_SPACE, seeds = [ARMY_SEED, &game_id.to_le_bytes(), &[0]], bump)]
-    pub army: Account<'info, Army>,
+    #[account(init, payer = payer, space = 8 + std::mem::size_of::<Army>(), seeds = [ARMY_SEED, &game_id.to_le_bytes(), &[0]], bump)]
+    pub army: AccountLoader<'info, Army>,
     #[account(init, payer = payer, space = 8 + Intel::INIT_SPACE, seeds = [INTEL_SEED, &game_id.to_le_bytes(), &[0]], bump)]
-    pub intel: Account<'info, Intel>,
+    pub intel: Box<Account<'info, Intel>>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -555,10 +584,10 @@ pub struct CreateGame<'info> {
 pub struct JoinGame<'info> {
     #[account(mut, seeds = [GAME_SEED, &game_id.to_le_bytes()], bump)]
     pub game: Account<'info, Game>,
-    #[account(init, payer = payer, space = 8 + Army::INIT_SPACE, seeds = [ARMY_SEED, &game_id.to_le_bytes(), &[1]], bump)]
-    pub army: Account<'info, Army>,
+    #[account(init, payer = payer, space = 8 + std::mem::size_of::<Army>(), seeds = [ARMY_SEED, &game_id.to_le_bytes(), &[1]], bump)]
+    pub army: AccountLoader<'info, Army>,
     #[account(init, payer = payer, space = 8 + Intel::INIT_SPACE, seeds = [INTEL_SEED, &game_id.to_le_bytes(), &[1]], bump)]
-    pub intel: Account<'info, Intel>,
+    pub intel: Box<Account<'info, Intel>>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -607,8 +636,8 @@ pub struct StartGame<'info> {
 pub struct IssueOrders<'info> {
     #[account(seeds = [GAME_SEED, &game.game_id.to_le_bytes()], bump)]
     pub game: Account<'info, Game>,
-    #[account(mut, seeds = [ARMY_SEED, &game.game_id.to_le_bytes(), &[army.side]], bump)]
-    pub army: Account<'info, Army>,
+    #[account(mut)]
+    pub army: AccountLoader<'info, Army>,
     pub commander: Signer<'info>,
 }
 
@@ -617,13 +646,13 @@ pub struct Tick<'info> {
     #[account(mut, seeds = [GAME_SEED, &game.game_id.to_le_bytes()], bump)]
     pub game: Account<'info, Game>,
     #[account(mut, seeds = [ARMY_SEED, &game.game_id.to_le_bytes(), &[0]], bump)]
-    pub army0: Account<'info, Army>,
+    pub army0: AccountLoader<'info, Army>,
     #[account(mut, seeds = [ARMY_SEED, &game.game_id.to_le_bytes(), &[1]], bump)]
-    pub army1: Account<'info, Army>,
+    pub army1: AccountLoader<'info, Army>,
     #[account(mut, seeds = [INTEL_SEED, &game.game_id.to_le_bytes(), &[0]], bump)]
-    pub intel0: Account<'info, Intel>,
+    pub intel0: Box<Account<'info, Intel>>,
     #[account(mut, seeds = [INTEL_SEED, &game.game_id.to_le_bytes(), &[1]], bump)]
-    pub intel1: Account<'info, Intel>,
+    pub intel1: Box<Account<'info, Intel>>,
 }
 
 #[derive(Accounts)]
@@ -657,13 +686,13 @@ pub struct Reveal<'info> {
     #[account(mut, seeds = [GAME_SEED, &game.game_id.to_le_bytes()], bump)]
     pub game: Account<'info, Game>,
     #[account(mut, seeds = [ARMY_SEED, &game.game_id.to_le_bytes(), &[0]], bump)]
-    pub army0: Account<'info, Army>,
+    pub army0: AccountLoader<'info, Army>,
     #[account(mut, seeds = [ARMY_SEED, &game.game_id.to_le_bytes(), &[1]], bump)]
-    pub army1: Account<'info, Army>,
+    pub army1: AccountLoader<'info, Army>,
     #[account(mut, seeds = [INTEL_SEED, &game.game_id.to_le_bytes(), &[0]], bump)]
-    pub intel0: Account<'info, Intel>,
+    pub intel0: Box<Account<'info, Intel>>,
     #[account(mut, seeds = [INTEL_SEED, &game.game_id.to_le_bytes(), &[1]], bump)]
-    pub intel1: Account<'info, Intel>,
+    pub intel1: Box<Account<'info, Intel>>,
     /// CHECK: checked by the permission program
     #[account(mut)]
     pub permission_game: UncheckedAccount<'info>,

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
 import { createGame } from "@/lib/server/ops";
 import { addGame, listGames } from "@/lib/server/registry";
-import { watchGame } from "@/lib/server/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -21,9 +20,8 @@ export async function POST(req: Request) {
       vsAi: !!vsAi,
       createdAt: Date.now(),
       host: human.toBase58(),
-      status: vsAi ? "active" : "waiting",
+      status: "waiting",
     });
-    if (vsAi) watchGame(g.gameId, true);
     return NextResponse.json(g);
   } catch (e) {
     console.error(e);

@@ -149,7 +149,7 @@ export async function createGame(human: PublicKey, vsAi: boolean): Promise<Creat
   ]);
   if (vsAi) {
     await finishSide1(id, human, ai.publicKey);
-    await startAndCrank(id, ai);
+    // the human presses Start on the battle page (POST /api/games/[id]/start)
   }
   return { gameId: id.toString(), side: 0 };
 }

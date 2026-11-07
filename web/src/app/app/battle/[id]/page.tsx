@@ -71,8 +71,49 @@ export default function BattlePage({ params }: { params: Promise<{ id: string }>
         <Loader2 className="animate-spin" size={18} /> Reading your sealed army from the rollup…
       </div>
     );
-  if (game.status === 0) return <Waiting id={id} />;
+  if (game.status === 0) return game.vsAi ? <Ready id={id} army={army} /> : <Waiting id={id} />;
   return <Battle game={game} army={army} intel={intel} side={side} conn={conn!} gameId={gameId} />;
+}
+
+function Ready({ id, army }: { id: string; army: ArmyState }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const start = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const r = await fetch(`/api/games/${id}/start`, { method: "POST" });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Could not start");
+    } catch (e) {
+      setErr((e as Error).message);
+      setBusy(false);
+    }
+  };
+  const units: MapUnit[] = army.units.map((u, i) => ({ ...u, squad: i, team: "blue" }));
+  return (
+    <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-[1fr_320px]">
+      <div className="card p-3 sm:p-4">
+        <Battlefield units={units} fog={visibleTiles(army.units)} mySide={army.side} className="w-full rounded-xl" />
+      </div>
+      <div className="card flex flex-col gap-4 p-6">
+        <div>
+          <div className="label">Battlefield ready</div>
+          <div className="mt-1 text-2xl font-extrabold">Your army is sealed</div>
+          <p className="mt-2 text-sm text-muted">Three squads at your base in the south. Claude is in the north and can&apos;t see you. Hold crossings to score; first to {WIN_SCORE} wins.</p>
+        </div>
+        <ul className="space-y-1 text-sm">
+          <li>· Take the Ford early, it&apos;s the shortest walk for both sides</li>
+          <li>· Your scout sees 5 tiles; woods hide it</li>
+          <li>· Add &ldquo;if…&rdquo; to any order to set a trap</li>
+        </ul>
+        <button className="btn btn-accent h-12 text-base" onClick={start} disabled={busy}>
+          {busy ? <Loader2 size={18} className="animate-spin" /> : null} {busy ? "Starting the crank…" : "Start the battle"}
+        </button>
+        {err && <div className="text-sm text-red">{err}</div>}
+      </div>
+    </div>
+  );
 }
 
 function Waiting({ id }: { id: string }) {

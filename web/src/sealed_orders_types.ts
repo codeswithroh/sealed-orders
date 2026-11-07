@@ -997,6 +997,10 @@ export type SealedOrders = {
     },
     {
       "name": "army",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -1005,12 +1009,25 @@ export type SealedOrders = {
             "type": "u64"
           },
           {
-            "name": "side",
-            "type": "u8"
-          },
-          {
             "name": "commander",
             "type": "pubkey"
+          },
+          {
+            "name": "log",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "logEntry"
+                  }
+                },
+                16
+              ]
+            }
+          },
+          {
+            "name": "logCount",
+            "type": "u16"
           },
           {
             "name": "units",
@@ -1026,19 +1043,15 @@ export type SealedOrders = {
             }
           },
           {
-            "name": "logCount",
-            "type": "u16"
+            "name": "side",
+            "type": "u8"
           },
           {
-            "name": "log",
+            "name": "pad",
             "type": {
               "array": [
-                {
-                  "defined": {
-                    "name": "logEntry"
-                  }
-                },
-                16
+                "u8",
+                5
               ]
             }
           }
@@ -1147,6 +1160,10 @@ export type SealedOrders = {
     },
     {
       "name": "logEntry",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -1251,34 +1268,6 @@ export type SealedOrders = {
       }
     },
     {
-      "name": "ruleState",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "trigger",
-            "type": {
-              "defined": {
-                "name": "triggerS"
-              }
-            }
-          },
-          {
-            "name": "action",
-            "type": {
-              "defined": {
-                "name": "actionS"
-              }
-            }
-          },
-          {
-            "name": "fired",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "seenState",
       "type": {
         "kind": "struct",
@@ -1332,6 +1321,10 @@ export type SealedOrders = {
     },
     {
       "name": "unitState",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -1359,7 +1352,7 @@ export type SealedOrders = {
             "name": "action",
             "type": {
               "defined": {
-                "name": "actionS"
+                "name": "zAction"
               }
             }
           },
@@ -1369,12 +1362,96 @@ export type SealedOrders = {
               "array": [
                 {
                   "defined": {
-                    "name": "ruleState"
+                    "name": "zRule"
                   }
                 },
                 2
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "zAction",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "x",
+            "type": "u8"
+          },
+          {
+            "name": "y",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "zRule",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "trigger",
+            "type": {
+              "defined": {
+                "name": "zTrigger"
+              }
+            }
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "zAction"
+              }
+            }
+          },
+          {
+            "name": "fired",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "zTrigger",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "a",
+            "type": "u8"
+          },
+          {
+            "name": "b",
+            "type": "u8"
+          },
+          {
+            "name": "c",
+            "type": "u8"
           }
         ]
       }

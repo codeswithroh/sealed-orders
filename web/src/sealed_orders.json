@@ -991,6 +991,10 @@
     },
     {
       "name": "Army",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -999,12 +1003,25 @@
             "type": "u64"
           },
           {
-            "name": "side",
-            "type": "u8"
-          },
-          {
             "name": "commander",
             "type": "pubkey"
+          },
+          {
+            "name": "log",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "LogEntry"
+                  }
+                },
+                16
+              ]
+            }
+          },
+          {
+            "name": "log_count",
+            "type": "u16"
           },
           {
             "name": "units",
@@ -1020,19 +1037,15 @@
             }
           },
           {
-            "name": "log_count",
-            "type": "u16"
+            "name": "side",
+            "type": "u8"
           },
           {
-            "name": "log",
+            "name": "_pad",
             "type": {
               "array": [
-                {
-                  "defined": {
-                    "name": "LogEntry"
-                  }
-                },
-                16
+                "u8",
+                5
               ]
             }
           }
@@ -1141,6 +1154,10 @@
     },
     {
       "name": "LogEntry",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -1245,34 +1262,6 @@
       }
     },
     {
-      "name": "RuleState",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "trigger",
-            "type": {
-              "defined": {
-                "name": "TriggerS"
-              }
-            }
-          },
-          {
-            "name": "action",
-            "type": {
-              "defined": {
-                "name": "ActionS"
-              }
-            }
-          },
-          {
-            "name": "fired",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "SeenState",
       "type": {
         "kind": "struct",
@@ -1326,6 +1315,10 @@
     },
     {
       "name": "UnitState",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -1353,7 +1346,7 @@
             "name": "action",
             "type": {
               "defined": {
-                "name": "ActionS"
+                "name": "ZAction"
               }
             }
           },
@@ -1363,12 +1356,96 @@
               "array": [
                 {
                   "defined": {
-                    "name": "RuleState"
+                    "name": "ZRule"
                   }
                 },
                 2
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ZAction",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "x",
+            "type": "u8"
+          },
+          {
+            "name": "y",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ZRule",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "trigger",
+            "type": {
+              "defined": {
+                "name": "ZTrigger"
+              }
+            }
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "ZAction"
+              }
+            }
+          },
+          {
+            "name": "fired",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ZTrigger",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "a",
+            "type": "u8"
+          },
+          {
+            "name": "b",
+            "type": "u8"
+          },
+          {
+            "name": "c",
+            "type": "u8"
           }
         ]
       }

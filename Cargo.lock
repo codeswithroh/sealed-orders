@@ -1812,6 +1812,7 @@ name = "sealed-orders"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "bytemuck",
  "ephemeral-rollups-sdk",
  "magicblock-magic-program-api",
 ]

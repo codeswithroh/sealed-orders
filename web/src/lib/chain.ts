@@ -14,7 +14,7 @@ import type { SealedOrders } from "@/sealed_orders_types";
 import type { ArmyState, GameState, IntelState, Order } from "./game";
 
 export const PROGRAM_ID = new PublicKey(idl.address);
-export const BASE_RPC = process.env.NEXT_PUBLIC_BASE_RPC || "https://api.devnet.solana.com";
+export const BASE_RPC = process.env.NEXT_PUBLIC_BASE_RPC || "https://rpc.magicblock.app/devnet";
 export const TEE_URL = process.env.NEXT_PUBLIC_TEE_URL || "https://devnet-tee.magicblock.app";
 export const TEE_WS = TEE_URL.replace(/^http/, "ws");
 export const TEE_VALIDATOR = new PublicKey(
@@ -89,7 +89,13 @@ export async function sendIxs(connection: Connection, ixs: TransactionInstructio
   tx.sign(...signers);
   const sig = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: true });
   const res = await connection.confirmTransaction(sig, "confirmed");
-  if (res.value.err) throw new Error(`tx ${sig} failed: ${JSON.stringify(res.value.err)}`);
+  if (res.value.err) {
+    const info = await connection
+      .getTransaction(sig, { commitment: "confirmed", maxSupportedTransactionVersion: 0 })
+      .catch(() => null);
+    const logs = info?.meta?.logMessages?.slice(-8).join("\n") ?? "";
+    throw new Error(`tx ${sig} failed: ${JSON.stringify(res.value.err)}\n${logs}`);
+  }
   return sig;
 }
 
