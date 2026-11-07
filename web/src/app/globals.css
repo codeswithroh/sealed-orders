@@ -31,6 +31,74 @@
   --color-amber: var(--amber);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
+  --color-cream: #fbf8f3;
+  --color-sky: #bfe0f7;
+  --color-teal: #1f8a7a;
+  --color-magenta: #d6336c;
+  --color-sun: #f2a516;
+  --color-ocean: #1f6fb8;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-6%);
+  }
+  to {
+    transform: translateX(6%);
+  }
+}
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.drift {
+  animation: drift 26s ease-in-out infinite alternate;
+}
+.drift-slow {
+  animation: drift 40s ease-in-out infinite alternate-reverse;
+}
+.float-y {
+  animation: float-y 6s ease-in-out infinite;
+}
+.grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.55) 0.6px, transparent 0.7px);
+  background-size: 3px 3px;
+}
+.stamp {
+  padding: 11px;
+  background: radial-gradient(circle, transparent 5px, #fff 5.6px) -8px -8px / 16px 16px;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-up {
+    animation: none;
+  }
+  .drift,
+  .drift-slow,
+  .float-y {
+    animation: none;
+  }
 }
 
 body {

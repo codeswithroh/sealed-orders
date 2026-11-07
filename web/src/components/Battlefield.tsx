@@ -124,13 +124,19 @@ export function Battlefield({ units, fog = null, control = [0, 0, 0], mySide = 0
       {units
         .filter((u) => u.hp > 0 || u.ghost)
         .map((u) => {
-          const cx = tx(u.x) * CELL + 5;
-          const cy = ty(u.y) * CELL + 5;
+          const px = tx(u.x) * CELL + 5;
+          const py = ty(u.y) * CELL + 5;
+          const cx = 0;
+          const cy = 0;
           const color = u.team === "blue" ? "var(--blue)" : "var(--red)";
           const frac = Math.max(0, u.hp / maxHp(u.kind));
           const r = u.kind === 1 ? 3.4 : 4;
           return (
-            <g key={`${u.team}${u.squad}${u.ghost ? "g" : ""}`} pointerEvents="none" style={{ transition: "transform 0.45s linear" }}>
+            <g
+              key={`${u.team}${u.squad}${u.ghost ? "g" : ""}`}
+              pointerEvents="none"
+              style={{ transform: `translate(${px}px, ${py}px)`, transition: "transform 0.42s cubic-bezier(.4,.0,.2,1)" }}
+            >
               {highlight === u.squad && u.team === "blue" && <circle cx={cx} cy={cy} r={6} fill="none" stroke={color} strokeWidth={0.6} />}
               <circle
                 cx={cx}
