@@ -2,7 +2,7 @@ target/
 node_modules/
 .next/
 .env*
-!.env.example
+!**/.env.example
 .anchor/
 *.log
 .DS_Store
