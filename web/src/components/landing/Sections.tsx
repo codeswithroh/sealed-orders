@@ -1,10 +1,8 @@
 "use client";
 import { animate, motion, useInView, useMotionValue, useTransform } from "motion/react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Bot, Eye, EyeOff, Lock, MessageSquareText, ShieldCheck, Timer } from "lucide-react";
-import { Battlefield, type MapUnit } from "../Battlefield";
-import { type Unit, visibleTiles } from "@/lib/game";
 
 const reveal = {
   initial: { opacity: 0, y: 28 },
@@ -19,17 +17,6 @@ export function Eyebrow({ children }: { children: React.ReactNode }) {
 
 /* ---------------- Their view vs yours ---------------- */
 
-const BLUE = [
-  { x: 2, y: 8 },
-  { x: 7, y: 7 },
-  { x: 9, y: 3 },
-];
-const RED = [
-  { x: 12, y: 6 },
-  { x: 4, y: 4 },
-  { x: 7, y: 5 },
-];
-
 export function ViewSlider() {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(70);
@@ -41,16 +28,6 @@ export function ViewSlider() {
     const c = animate(70, 50, { duration: 1.4, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => setPos(v) });
     return () => c.stop();
   }, [inView]);
-
-  const all: MapUnit[] = [
-    ...BLUE.map((p, i) => ({ ...p, hp: 100, kind: i === 2 ? 1 : 0, squad: i, team: "blue" as const })),
-    ...RED.map((p, i) => ({ ...p, hp: 100, kind: i === 2 ? 1 : 0, squad: i, team: "red" as const })),
-  ];
-  const fog = useMemo(
-    () => visibleTiles(BLUE.map((p, i) => ({ ...p, kind: i === 2 ? 1 : 0, hp: 100, cooldown: 0, action: { kind: 0, x: 0, y: 0 }, rules: [] })) as Unit[]),
-    [],
-  );
-  const sealed = all.filter((u) => u.team === "blue" || fog.has(`${u.x},${u.y}`));
 
   const setFrom = (clientX: number) => {
     const r = ref.current?.getBoundingClientRect();
@@ -81,9 +58,11 @@ export function ViewSlider() {
           onPointerUp={() => setDrag(false)}
         >
           <div className="relative">
-            <Battlefield units={sealed} fog={fog} control={[1, 1, 2]} className="block w-full rounded-2xl" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/shots/fog.webp" alt="The battle as you see it: enemy squads hidden under fog" draggable={false} className="block aspect-square w-full rounded-2xl object-cover" />
             <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-              <Battlefield units={all} fog={null} control={[1, 1, 2]} className="block w-full rounded-2xl" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/shots/all.webp" alt="The same battle on a public chain: every enemy squad visible" draggable={false} className="block aspect-square w-full rounded-2xl object-cover" />
               <div className="absolute inset-0 rounded-2xl bg-red/5" />
             </div>
             <div className="absolute inset-y-0" style={{ left: `${pos}%` }}>
@@ -236,11 +215,11 @@ export function FeatureCards() {
 /* ---------------- Stamps ---------------- */
 
 const STAMPS = [
-  { name: "Alpha", sub: "Infantry", stat: "100 HP", tint: "#dfe9fb", fg: "var(--blue)", glyph: "A", note: "Moves every 2nd tick" },
-  { name: "Bravo", sub: "Infantry", stat: "100 HP", tint: "#e4eefc", fg: "var(--blue)", glyph: "B", note: "Holds take 25% less" },
-  { name: "Scout", sub: "Recon", stat: "5 tiles", tint: "#e7f3ec", fg: "var(--green)", glyph: "S", note: "Sees farthest, 60 HP" },
-  { name: "Hill", sub: "Terrain", stat: "+2 sight", tint: "#eef0e2", fg: "#7d845c", glyph: "▲", note: "And 25% less damage" },
-  { name: "Woods", sub: "Terrain", stat: "Hidden", tint: "#e3eedb", fg: "#5c8a4b", glyph: "♣", note: "Unless they're adjacent" },
+  { name: "Alpha", sub: "Infantry", stat: "100 HP", tint: "#dfe9fb", fg: "var(--blue)", img: "/shots/alpha.webp", note: "Moves every 2nd tick" },
+  { name: "Bravo", sub: "Infantry", stat: "100 HP", tint: "#e4eefc", fg: "var(--blue)", img: "/shots/alpha.webp", flip: true, note: "Holds take 25% less" },
+  { name: "Scout", sub: "Recon", stat: "5 tiles", tint: "#e7f3ec", fg: "var(--green)", img: "/shots/scout.webp", note: "Sees farthest, 60 HP" },
+  { name: "Hill", sub: "Terrain", stat: "+2 sight", tint: "#eef0e2", fg: "#7d845c", img: "/shots/hill.webp", note: "And 25% less damage" },
+  { name: "Woods", sub: "Terrain", stat: "Hidden", tint: "#e3eedb", fg: "#5c8a4b", img: "/shots/woods.webp", note: "Unless they're adjacent" },
 ];
 
 export function Stamps() {
@@ -264,10 +243,9 @@ export function Stamps() {
           >
             <div className="stamp">
               <div className="w-36 border border-black/10 bg-white p-2">
-                <div className="grid h-28 place-items-center" style={{ background: s.tint }}>
-                  <span className="grid h-14 w-14 place-items-center rounded-full font-serif text-3xl text-white" style={{ background: s.fg }}>
-                    {s.glyph}
-                  </span>
+                <div className="h-32 overflow-hidden" style={{ background: s.tint }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={s.img} alt={`${s.name}, ${s.sub}`} loading="lazy" draggable={false} className={`h-full w-full object-cover object-bottom ${"flip" in s && s.flip ? "-scale-x-100" : ""}`} />
                 </div>
                 <div className="mt-2 flex items-end justify-between">
                   <div>

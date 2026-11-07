@@ -29,6 +29,8 @@ export type EngineOpts = {
   mySide: number;
   interactive?: boolean;
   intro?: boolean;
+  /** Landing-page mode: no input, no sound, fixed camera with an optional slow orbit. */
+  showcase?: { pos: [number, number, number]; target: [number, number, number]; orbit?: number };
   onSelect?: (squad: number | null) => void;
   onCommand?: (squad: number, kind: "move" | "attack", x: number, y: number) => void;
   onTile?: (x: number, y: number) => void;
@@ -275,7 +277,19 @@ export class BattleEngine {
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(el);
     this.resize();
-    if (opts.intro) {
+    if (opts.showcase) {
+      const sc = opts.showcase;
+      this.camera.position.set(...sc.pos);
+      this.controls.target.set(...sc.target);
+      this.controls.enabled = false;
+      this.controls.minDistance = 1;
+      this.controls.minPolarAngle = 0;
+      this.controls.maxPolarAngle = 1.55;
+      this.controls.autoRotate = !!sc.orbit;
+      this.controls.autoRotateSpeed = sc.orbit ?? 0;
+      this.renderer.domElement.style.pointerEvents = "none";
+      this.renderer.domElement.style.touchAction = "auto";
+    } else if (opts.intro) {
       this.intro = { t: 0 };
       this.camera.position.set(0, 90, -70);
       this.controls.target.set(0, 0, -10);
@@ -811,7 +825,7 @@ export class BattleEngine {
       s.obj.visible = true;
       this.play(s, "Die", 0.1);
       this.puff(s.pos.clone().setY(s.pos.y + 0.4), 3);
-      sfx.death(this.pan(s.pos));
+      if (!this.opts.showcase) sfx.death(this.pan(s.pos));
       if (q.team === "blue") this.shake = Math.max(this.shake, 0.35);
       living = q.soldiers.filter((x) => x.alive);
     }
@@ -906,7 +920,7 @@ export class BattleEngine {
     this.shotLight.position.copy(muzzle);
     this.shotLight.intensity = 30;
     if (Math.random() < 0.5) this.puff(target, 1, 0.5);
-    sfx.shot(this.vol(muzzle), this.pan(muzzle));
+    if (!this.opts.showcase) sfx.shot(this.vol(muzzle), this.pan(muzzle));
   }
 
   private puff(at: THREE.Vector3, n = 2, size = 1) {
@@ -960,7 +974,7 @@ export class BattleEngine {
     on(c, "contextmenu", (e) => e.preventDefault());
     on(window, "keydown", (e) => {
       const tg = e.target as HTMLElement;
-      if (tg && (tg.tagName === "INPUT" || tg.tagName === "TEXTAREA")) return;
+      if (this.opts.showcase || (tg && (tg.tagName === "INPUT" || tg.tagName === "TEXTAREA"))) return;
       const k = e.key.toLowerCase();
       if (["w", "a", "s", "d", "q", "e", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) {
         this.keys.add(k);
@@ -1251,7 +1265,7 @@ export class BattleEngine {
     const lim = MAP / 2 + 3;
     const cx = Math.max(-lim, Math.min(lim, c.target.x));
     const cz = Math.max(-lim, Math.min(lim, c.target.z));
-    if (cx !== c.target.x || cz !== c.target.z || c.target.y !== 0) {
+    if (!this.opts.showcase && (cx !== c.target.x || cz !== c.target.z || c.target.y !== 0)) {
       const d = new THREE.Vector3(cx - c.target.x, -c.target.y, cz - c.target.z);
       c.target.add(d);
       this.camera.position.add(d);

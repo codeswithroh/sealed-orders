@@ -2,7 +2,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CornerDownLeft, Lock, Sparkles, Zap } from "lucide-react";
-import { Battlefield, type MapUnit } from "../Battlefield";
+import { Battle3D } from "../Battle3D";
+import type { SceneUnit } from "@/game3d/engine";
 import { type Unit, visibleTiles } from "@/lib/game";
 import { step, type P } from "./mini-sim";
 
@@ -66,6 +67,8 @@ const SCENES: Scene[] = [
     ticks: 22,
   },
 ];
+
+const SHOWCASE = { pos: [0, 23, 25] as [number, number, number], target: [0, 0, 3] as [number, number, number], orbit: 0.35 };
 
 type Phase = "typing" | "compiling" | "sealed" | "running" | "done";
 
@@ -168,12 +171,16 @@ export function HeroWindow() {
     [blue],
   );
   const fog = useMemo(() => visibleTiles(asUnits), [asUnits]);
-  const units: MapUnit[] = [
-    ...blue.map((p, i) => ({ ...p, hp: 100, kind: i === 2 ? 1 : 0, squad: i, team: "blue" as const, target: scene.blueTo[i] })),
-    ...red
-      .map((p, i) => ({ ...p, hp: 100, kind: i === 2 ? 1 : 0, squad: i, team: "red" as const }))
-      .filter((u) => fog.has(`${u.x},${u.y}`)),
-  ];
+  const ctrl = phase === "running" || phase === "done" ? (sceneIdx === 2 && toast ? 0 : 1) : 0;
+  const scene3d = useMemo(() => {
+    const units: SceneUnit[] = [
+      ...blue.map((p, i) => ({ ...p, hp: 100, kind: i === 2 ? 1 : 0, squad: i, team: "blue" as const, target: scene.blueTo[i] })),
+      ...red
+        .map((p, i) => ({ ...p, hp: 100, kind: i === 2 ? 1 : 0, squad: i, team: "red" as const }))
+        .filter((u) => fog.has(`${u.x},${u.y}`)),
+    ];
+    return { units, fog, control: [0, ctrl, sceneIdx > 0 ? 2 : 0], selected: null };
+  }, [blue, red, fog, scene, ctrl, sceneIdx]);
 
   const submit = () => {
     const t = draft.trim();
@@ -199,7 +206,12 @@ export function HeroWindow() {
 
       <div className="grid md:grid-cols-[1.15fr_1fr]">
         <div className="relative border-b border-black/5 p-3 md:border-b-0 md:border-r">
-          <Battlefield units={units} fog={fog} control={[0, phase === "running" || phase === "done" ? (sceneIdx === 2 && toast ? 0 : 1) : 0, sceneIdx > 0 ? 2 : 0]} className="w-full rounded-xl" />
+          <Battle3D
+            className="relative h-[320px] w-full rounded-xl sm:h-[420px] md:h-full md:min-h-[460px]"
+            mySide={0}
+            showcase={SHOWCASE}
+            state={scene3d}
+          />
           <AnimatePresence>
             {toast && (
               <motion.div

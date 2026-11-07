@@ -29,6 +29,7 @@ export const Battle3D = forwardRef<Battle3DHandle, Props>(function Battle3D({ st
             return optsRef.current.interactive;
           },
           intro: optsRef.current.intro,
+          showcase: optsRef.current.showcase,
           onSelect: (s) => optsRef.current.onSelect?.(s),
           onCommand: (...a) => optsRef.current.onCommand?.(...a),
           onTile: (x, y) => optsRef.current.onTile?.(x, y),
