@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f3f4f1;
+  --card: #ffffff;
+  --ink: #15171a;
+  --muted: #6b7068;
+  --line: #e4e6e0;
+  --accent: #e5582b;
+  --blue: #2f6feb;
+  --red: #e5484d;
+  --green: #2e9e6a;
+  --amber: #e8a33d;
+  --grass: #e9eedf;
+  --river: #b9d4ea;
+  --crossing: #d9c9a3;
+  --hill: #d3d8bb;
+  --woods: #b4cca2;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-blue: var(--blue);
+  --color-red: var(--red);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer components {
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(21, 23, 26, 0.04), 0 4px 16px rgba(21, 23, 26, 0.04);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.05s, opacity 0.15s, background 0.15s;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--ink);
+  color: white;
+}
+.btn-primary:hover:not(:disabled) {
+  background: #2a2d31;
+}
+.btn-accent {
+  background: var(--accent);
+  color: white;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: #eceee9;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+}
+
+@keyframes pulse-ring {
+  0% {
+    opacity: 0.7;
+    r: 0.3;
+  }
+  100% {
+    opacity: 0;
+    r: 0.9;
+  }
+}
+.ping {
+  animation: pulse-ring 1.2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ping {
+    animation: none;
+  }
+}

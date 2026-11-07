@@ -1,0 +1,1377 @@
+{
+  "address": "3i78SahtFXsvLVUbEJc1cgoUk3WnUTB9LHtEwMDbNCxH",
+  "metadata": {
+    "name": "sealed_orders",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Sealed Orders: command your army in plain English, orders sealed in a MagicBlock Private Ephemeral Rollup"
+  },
+  "instructions": [
+    {
+      "name": "create_game",
+      "docs": [
+        "Base layer. Creates the game and side 0's army + intel, and pre-funds",
+        "rent for the ephemeral permissions each PDA will create on the rollup."
+      ],
+      "discriminator": [
+        124,
+        69,
+        75,
+        66,
+        184,
+        220,
+        72,
+        206
+      ],
+      "accounts": [
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "game_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "army",
+          "writable": true
+        },
+        {
+          "name": "intel",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "game_id",
+          "type": "u64"
+        },
+        {
+          "name": "commander",
+          "type": "pubkey"
+        },
+        {
+          "name": "vs_ai",
+          "type": "bool"
+        },
+        {
+          "name": "min_slots",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "delegate_pda",
+      "docs": [
+        "Base layer. Delegate any game PDA to the (TEE) ephemeral validator."
+      ],
+      "discriminator": [
+        248,
+        217,
+        193,
+        46,
+        124,
+        191,
+        64,
+        135
+      ],
+      "accounts": [
+        {
+          "name": "buffer_pda",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pda"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                40,
+                63,
+                29,
+                198,
+                108,
+                22,
+                48,
+                138,
+                113,
+                79,
+                169,
+                69,
+                29,
+                246,
+                50,
+                149,
+                168,
+                36,
+                147,
+                89,
+                155,
+                168,
+                65,
+                251,
+                116,
+                94,
+                67,
+                189,
+                86,
+                238,
+                8,
+                250
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_pda",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pda"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_pda",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pda"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "pda",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "signer": true
+        },
+        {
+          "name": "validator",
+          "optional": true
+        },
+        {
+          "name": "owner_program",
+          "address": "3i78SahtFXsvLVUbEJc1cgoUk3WnUTB9LHtEwMDbNCxH"
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_type",
+          "type": {
+            "defined": {
+              "name": "AccountType"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "init_permission",
+      "docs": [
+        "Rollup. Creates the permission for a delegated PDA. `members = None` makes",
+        "it public. The PDA pays its own rent from the pre-funded lamports."
+      ],
+      "discriminator": [
+        66,
+        14,
+        153,
+        250,
+        187,
+        36,
+        179,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "permissioned_account",
+          "writable": true
+        },
+        {
+          "name": "permission",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "ephemeral_vault",
+          "writable": true,
+          "address": "MagicVau1t999999999999999999999999999999999"
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_type",
+          "type": {
+            "defined": {
+              "name": "AccountType"
+            }
+          }
+        },
+        {
+          "name": "members",
+          "type": {
+            "option": {
+              "vec": {
+                "defined": {
+                  "name": "Member"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "issue_orders",
+      "docs": [
+        "Rollup. Replace orders for one or more squads. Signed by the army's own",
+        "commander key; the plain-English text is kept in the sealed log so it can",
+        "be revealed after the battle."
+      ],
+      "discriminator": [
+        56,
+        12,
+        107,
+        147,
+        165,
+        211,
+        232,
+        171
+      ],
+      "accounts": [
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "army",
+          "writable": true
+        },
+        {
+          "name": "commander",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "orders",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "OrderIn"
+              }
+            }
+          }
+        },
+        {
+          "name": "text",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "join_game",
+      "docs": [
+        "Base layer. Side 1 joins."
+      ],
+      "discriminator": [
+        107,
+        112,
+        18,
+        38,
+        56,
+        173,
+        60,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "game_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "army",
+          "writable": true
+        },
+        {
+          "name": "intel",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "game_id",
+          "type": "u64"
+        },
+        {
+          "name": "commander",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "process_undelegation",
+      "discriminator": [
+        196,
+        28,
+        41,
+        206,
+        48,
+        37,
+        51,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "buffer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  110,
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  101,
+                  45,
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "base_account"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                181,
+                183,
+                0,
+                225,
+                242,
+                87,
+                58,
+                192,
+                204,
+                6,
+                34,
+                1,
+                52,
+                74,
+                207,
+                151,
+                184,
+                53,
+                6,
+                235,
+                140,
+                229,
+                25,
+                152,
+                204,
+                98,
+                126,
+                24,
+                147,
+                128,
+                167,
+                62
+              ]
+            }
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_seeds",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "reveal",
+      "docs": [
+        "Rollup. After the battle, anyone can make every account public so the",
+        "full replay (positions + every order, with its original text) is readable."
+      ],
+      "discriminator": [
+        9,
+        35,
+        59,
+        190,
+        167,
+        249,
+        76,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "army0",
+          "writable": true
+        },
+        {
+          "name": "army1",
+          "writable": true
+        },
+        {
+          "name": "intel0",
+          "writable": true
+        },
+        {
+          "name": "intel1",
+          "writable": true
+        },
+        {
+          "name": "permission_game",
+          "writable": true
+        },
+        {
+          "name": "permission_army0",
+          "writable": true
+        },
+        {
+          "name": "permission_army1",
+          "writable": true
+        },
+        {
+          "name": "permission_intel0",
+          "writable": true
+        },
+        {
+          "name": "permission_intel1",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "permission_program",
+          "address": "ACLseoPoyC3cBqoUtkbjZ4aDrkurZW86v19pXz2XQnp1"
+        },
+        {
+          "name": "ephemeral_vault",
+          "writable": true,
+          "address": "MagicVau1t999999999999999999999999999999999"
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "schedule_ticks",
+      "docs": [
+        "Rollup. Schedule `tick` as a crank."
+      ],
+      "discriminator": [
+        243,
+        206,
+        0,
+        155,
+        207,
+        136,
+        85,
+        251
+      ],
+      "accounts": [
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "writable": true
+        },
+        {
+          "name": "army0",
+          "writable": true
+        },
+        {
+          "name": "army1",
+          "writable": true
+        },
+        {
+          "name": "intel0",
+          "writable": true
+        },
+        {
+          "name": "intel1",
+          "writable": true
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "task_id",
+          "type": "i64"
+        },
+        {
+          "name": "interval_ms",
+          "type": "i64"
+        },
+        {
+          "name": "iterations",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "start_game",
+      "docs": [
+        "Rollup. Either commander starts the battle once both have joined."
+      ],
+      "discriminator": [
+        249,
+        47,
+        252,
+        172,
+        184,
+        162,
+        245,
+        14
+      ],
+      "accounts": [
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "commander",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "tick",
+      "docs": [
+        "Rollup. Advance the battle by one tick. Permissionless (the crank calls",
+        "it); rate-limited by `min_slots`."
+      ],
+      "discriminator": [
+        92,
+        79,
+        44,
+        8,
+        101,
+        80,
+        63,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_id",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "army0",
+          "writable": true
+        },
+        {
+          "name": "army1",
+          "writable": true
+        },
+        {
+          "name": "intel0",
+          "writable": true
+        },
+        {
+          "name": "intel1",
+          "writable": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Army",
+      "discriminator": [
+        52,
+        76,
+        160,
+        24,
+        239,
+        221,
+        51,
+        234
+      ]
+    },
+    {
+      "name": "Game",
+      "discriminator": [
+        27,
+        90,
+        166,
+        125,
+        74,
+        100,
+        121,
+        18
+      ]
+    },
+    {
+      "name": "Intel",
+      "discriminator": [
+        44,
+        3,
+        72,
+        188,
+        117,
+        22,
+        158,
+        65
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "GameFull",
+      "msg": "Game already has two commanders."
+    },
+    {
+      "code": 6001,
+      "name": "CannotJoinOwnGame",
+      "msg": "You cannot join your own game."
+    },
+    {
+      "code": 6002,
+      "name": "MissingOpponent",
+      "msg": "Waiting for an opponent."
+    },
+    {
+      "code": 6003,
+      "name": "NotACommander",
+      "msg": "Only this army's commander can do this."
+    },
+    {
+      "code": 6004,
+      "name": "AlreadyStarted",
+      "msg": "The battle has already started."
+    },
+    {
+      "code": 6005,
+      "name": "GameOver",
+      "msg": "The battle is over."
+    },
+    {
+      "code": 6006,
+      "name": "NotOver",
+      "msg": "The battle is not over yet."
+    },
+    {
+      "code": 6007,
+      "name": "BadOrder",
+      "msg": "Invalid order."
+    },
+    {
+      "code": 6008,
+      "name": "TextTooLong",
+      "msg": "Order text is longer than 96 bytes."
+    },
+    {
+      "code": 6009,
+      "name": "WrongAccount",
+      "msg": "Account does not match its seeds."
+    }
+  ],
+  "types": [
+    {
+      "name": "AccountType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Game",
+            "fields": [
+              {
+                "name": "game_id",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Army",
+            "fields": [
+              {
+                "name": "game_id",
+                "type": "u64"
+              },
+              {
+                "name": "side",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "Intel",
+            "fields": [
+              {
+                "name": "game_id",
+                "type": "u64"
+              },
+              {
+                "name": "side",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ActionS",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "x",
+            "type": "u8"
+          },
+          {
+            "name": "y",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Army",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_id",
+            "type": "u64"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "commander",
+            "type": "pubkey"
+          },
+          {
+            "name": "units",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "UnitState"
+                  }
+                },
+                3
+              ]
+            }
+          },
+          {
+            "name": "log_count",
+            "type": "u16"
+          },
+          {
+            "name": "log",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "LogEntry"
+                  }
+                },
+                16
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Game",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_id",
+            "type": "u64"
+          },
+          {
+            "name": "commanders",
+            "type": {
+              "array": [
+                "pubkey",
+                2
+              ]
+            }
+          },
+          {
+            "name": "joined",
+            "type": "u8"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "vs_ai",
+            "type": "bool"
+          },
+          {
+            "name": "min_slots",
+            "type": "u8"
+          },
+          {
+            "name": "tick",
+            "type": "u16"
+          },
+          {
+            "name": "last_slot",
+            "type": "u64"
+          },
+          {
+            "name": "control",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
+            "name": "scores",
+            "type": {
+              "array": [
+                "u16",
+                2
+              ]
+            }
+          },
+          {
+            "name": "winner",
+            "type": "u8"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Intel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_id",
+            "type": "u64"
+          },
+          {
+            "name": "side",
+            "type": "u8"
+          },
+          {
+            "name": "seen",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "SeenState"
+                  }
+                },
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LogEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tick",
+            "type": "u16"
+          },
+          {
+            "name": "mask",
+            "type": "u8"
+          },
+          {
+            "name": "len",
+            "type": "u8"
+          },
+          {
+            "name": "text",
+            "type": {
+              "array": [
+                "u8",
+                96
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Member",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "flags",
+            "type": "u8"
+          },
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderIn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "squad",
+            "type": "u8"
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "ActionS"
+              }
+            }
+          },
+          {
+            "name": "rules",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "RuleIn"
+                  }
+                },
+                2
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RuleIn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "trigger",
+            "type": {
+              "defined": {
+                "name": "TriggerS"
+              }
+            }
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "ActionS"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RuleState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "trigger",
+            "type": {
+              "defined": {
+                "name": "TriggerS"
+              }
+            }
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "ActionS"
+              }
+            }
+          },
+          {
+            "name": "fired",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeenState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "visible",
+            "type": "u8"
+          },
+          {
+            "name": "x",
+            "type": "u8"
+          },
+          {
+            "name": "y",
+            "type": "u8"
+          },
+          {
+            "name": "hp",
+            "type": "u8"
+          },
+          {
+            "name": "last_seen",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TriggerS",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "a",
+            "type": "u8"
+          },
+          {
+            "name": "b",
+            "type": "u8"
+          },
+          {
+            "name": "c",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UnitState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "x",
+            "type": "u8"
+          },
+          {
+            "name": "y",
+            "type": "u8"
+          },
+          {
+            "name": "hp",
+            "type": "u8"
+          },
+          {
+            "name": "cooldown",
+            "type": "u8"
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "ActionS"
+              }
+            }
+          },
+          {
+            "name": "rules",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "RuleState"
+                  }
+                },
+                2
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
