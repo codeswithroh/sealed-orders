@@ -50,6 +50,23 @@ MagicBlock Private Ephemeral Rollup (Intel TDX)
 - **The AI opponent plays fair.** It has its own key and reads only its own army and intel. It writes its orders as plain-English radio messages, which show up in the replay.
 - **Enclave check.** The top bar asks the rollup for a fresh Intel TDX quote over a random challenge and verifies it (`verifyTeeRpcIntegrity`).
 
+## The 3D battlefield
+
+The battle runs in a full-screen three.js scene (`web/src/game3d/`). The soldiers and props are modelled and animated in Blender by two scripts, so you can rebuild them yourself:
+
+```bash
+blender -b -P web/art/blender/soldiers.py   # infantry + scout on one rig: Idle, Walk, Run, Shoot, Die
+blender -b -P web/art/blender/props.py      # trees, rocks, bridges, sandbags, flags, tents
+```
+
+- **Fog of war:** the terrain darkens tiles your army can't see, with clouds drifting over them. An enemy you lose sight of stays on the map as a red "last seen" hologram.
+- **Squads:** infantry squads are 4 soldiers and the scout squad is 2. Each soldier falls when the squad's HP drops below its share.
+- **Combat:** squads one tile apart turn to face each other and open fire, with tracers, muzzle flashes and damage numbers.
+- **Capture points:** a flag at each crossing rises in the new owner's colour.
+- **Orders:** tap a squad, then tap the ground to move it or tap an enemy to attack. Each tap is sealed onchain as an order, with no Claude call. Typed and spoken orders still go through Claude, which turns them into rules.
+- **Controls:** drag to pan, right-drag or Q/E to rotate, scroll to zoom, WASD to move the camera, 1–3 to select a squad.
+- **Sound:** all of it is synthesized with Web Audio, so the game ships no audio files.
+
 ## Game rules
 
 - 15×15 map. A river runs across the middle row and can only be crossed at 3 points: West Bridge, Ford, East Bridge. These are also the capture points.
@@ -97,4 +114,4 @@ cd web && npx tsx scripts/e2e-end.ts   # play to the end and verify the reveal
 
 ## AI tools used
 
-As MLH rules require: Claude Code helped write this project, and the game uses Claude (`claude-haiku-5-5`) at runtime to compile orders and to command the AI army.
+As MLH rules require: Claude Code helped write this project (including the Blender scripts that build the 3D models), and the game uses Claude (`claude-haiku-5-5`) at runtime to compile orders and to command the AI army.

@@ -2,7 +2,8 @@
 import { use, useEffect, useMemo, useState } from "react";
 import { BN } from "@coral-xyz/anchor";
 import { Loader2, Unlock } from "lucide-react";
-import { Battlefield, type MapUnit } from "@/components/Battlefield";
+import { type MapUnit } from "@/components/Battlefield";
+import { Battle3D } from "@/components/Battle3D";
 import { getCommander } from "@/lib/client/commander";
 import { allPdas, decodeArmy, decodeGame, teeConnection } from "@/lib/chain";
 import { type ArmyState, type GameState, SQUAD_NAMES } from "@/lib/game";
@@ -74,8 +75,8 @@ export default function Replay({ params }: { params: Promise<{ id: string }> }) 
             <Unlock size={14} /> Every account is now public. Final positions, no fog.
           </div>
         </div>
-        <div className="card p-3 sm:p-4">
-          <Battlefield units={units} fog={null} control={game?.control} className="mx-auto w-full max-w-[720px] rounded-xl" />
+        <div className="card overflow-hidden p-0">
+          <Battle3D className="relative h-[420px] w-full sm:h-[560px]" mySide={0} state={{ units, fog: null, control: game?.control ?? [0, 0, 0], selected: null }} />
         </div>
         {game && (
           <div className="grid gap-3 sm:grid-cols-3">
